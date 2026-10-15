@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoSync Nexus - Obsidian Crimson Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: { 950: '#09090b', 900: '#121217', 800: '#1a1a24', 700: '#272738' },
+                        crimson: { 600: '#dc2626', 700: '#b91c1c', 500: '#ef4444', glow: 'rgba(239, 68, 68, 0.35)' }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'marquee': 'marquee 25s linear infinite',
+                    },
+                    keyframes: {
+                        float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-10px)' } },
+                        marquee: { '0%': { transform: 'translateX(0%)' }, '100%': { transform: 'translateX(-50%)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Modular Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen flex flex-col selection:bg-crimson-600 selection:text-white">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-crimson-600/20 px-4 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-crimson-600 to-obsidian-950 flex items-center justify-center crimson-shadow border border-crimson-500/30">
+                    <i class="fa-solid fa-terminal text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-gray-200 to-crimson-500 bg-clip-text text-transparent">
+                        AutoSync Nexus <span class="text-xs px-2 py-0.5 rounded-full bg-crimson-600/20 text-crimson-400 border border-crimson-500/30">Obsidian Crimson</span>
+                    </h1>
+                    <p class="text-xs text-zinc-400 font-mono-code">gitbash://sync-daemon.sh v4.2.0</p>
+                </div>
+            </div>
+
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-zinc-300">
+                <a href="#explorer" class="hover:text-crimson-500 transition-colors"><i class="fa-solid fa-magnifying-glass mr-1.5"></i>Explorer</a>
+                <a href="#showcase" class="hover:text-crimson-500 transition-colors"><i class="fa-solid fa-bolt mr-1.5"></i>Featured Hubs</a>
+                <a href="#terminal" class="hover:text-crimson-500 transition-colors"><i class="fa-solid fa-code mr-1.5"></i>Git Bash Terminal</a>
+                <a href="#status" class="hover:text-crimson-500 transition-colors"><i class="fa-solid fa-server mr-1.5"></i>System Monitor</a>
+            </nav>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="triggerSelfUpdate()" class="hidden sm:flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-obsidian-800 hover:bg-crimson-950/50 border border-crimson-600/30 text-xs font-mono-code text-zinc-200 transition-all hover:border-crimson-500">
+                    <i class="fa-solid fa-rotate text-crimson-500 animate-spin-slow" id="update-icon"></i>
+                    <span>Self-Update</span>
+                </button>
+                <div class="flex items-center space-x-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-mono-code">Synced</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 max-w-sm">
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-crimson-600 flex items-start space-x-3 shadow-2xl">
+            <i class="fa-solid fa-circle-info text-crimson-500 text-lg mt-0.5"></i>
+            <div>
+                <h4 id="toast-title" class="font-semibold text-sm text-white">System Notification</h4>
+                <p id="toast-message" class="text-xs text-zinc-300 mt-0.5">Action completed successfully.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 lg:px-8 py-8 space-y-16">
+
+        <!-- Hero Section & Ticker -->
+        <section class="space-y-8 text-center pt-6">
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-crimson-950/60 border border-crimson-600/30 text-crimson-400 text-xs font-mono-code animate-pulse-slow">
+                <i class="fa-solid fa-terminal"></i>
+                <span>GitBash Engine Active • Convention Over Configuration</span>
+            </div>
+            
+            <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tight max-w-4xl mx-auto leading-tight">
+                Accelerate Agents with <span class="bg-gradient-to-r from-crimson-500 via-red-500 to-rose-400 bg-clip-text text-transparent crimson-glow">Obsidian Precision</span>
+            </h2>
+            
+            <p class="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto">
+                A unified, dark-mode glassmorphic nexus integrating high-performance developer frameworks, real-time knowledge bases, and intelligent self-updating gitbash pipelines.
+            </p>
+
+            <!-- Highlighted Ticker Banner -->
+            <div class="w-full overflow-hidden glass-panel py-3 rounded-2xl border border-crimson-600/30 relative shadow-2xl">
+                <div class="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-obsidian-950 to-transparent z-10 pointer-events-none"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-obsidian-950 to-transparent z-10 pointer-events-none"></div>
+                <div class="flex space-x-8 animate-marquee whitespace-nowrap items-center text-sm font-mono-code">
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-crimson-500"></span>
+                        <span class="text-white font-bold">1. Ruby on Rails:</span> Accelerate your agents with convention over configuration
+                    </div>
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span class="text-white font-bold">2. The Information:</span> Deep tech journalism & exclusive insights
+                    </div>
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                        <span class="text-white font-bold">3. The Best React-Based Framework | Gatsby:</span> Blazing fast static sites
+                    </div>
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                        <span class="text-white font-bold">4. Build your website on our free CMS tools | HubSpot:</span> Scalable inbound marketing
+                    </div>
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-crimson-500"></span>
+                        <span class="text-white font-bold">1. Ruby on Rails:</span> Accelerate your agents with convention over configuration
+                    </div>
+                    <div class="inline-flex items-center space-x-2 text-zinc-300 bg-obsidian-900 px-4 py-2 rounded-xl border border-crimson-600/20">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span class="text-white font-bold">2. The Information:</span> Deep tech journalism & exclusive insights
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Search Explorer -->
+        <section id="explorer" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="text-xs font-mono-code text-crimson-500 uppercase tracking-widest">Omni-Search Engine</span>
+                    <h3 class="text-2xl font-bold text-white mt-1">Search Sites & Knowledge Hubs</h3>
+                </div>
+                <div class="flex items-center space-x-2 text-xs text-zinc-400">
+                    <span class="px-2.5 py-1 rounded-md bg-obsidian-800 border border-zinc-700">Filter by category:</span>
+                    <button onclick="filterHubs('all')" class="category-btn px-3 py-1 rounded-md bg-crimson-600 text-white font-medium transition-all">All</button>
+                    <button onclick="filterHubs('framework')" class="category-btn px-3 py-1 rounded-md bg-obsidian-800 hover:bg-obsidian-700 text-zinc-300 transition-all">Frameworks</button>
+                    <button onclick="filterHubs('news')" class="category-btn px-3 py-1 rounded-md bg-obsidian-800 hover:bg-obsidian-700 text-zinc-300 transition-all">News/Media</button>
+                    <button onclick="filterHubs('cms')" class="category-btn px-3 py-1 rounded-md bg-obsidian-800 hover:bg-obsidian-700 text-zinc-300 transition-all">CMS & Tools</button>
+                </div>
+            </div>
+
+            <!-- Search Bar Input -->
+            <div class="relative max-w-3xl mx-auto">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-crimson-500">
+                    <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                </span>
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search Ruby on Rails, Gatsby, The Information, HubSpot..." class="w-full pl-12 pr-28 py-4 rounded-2xl glass-panel text-white placeholder-zinc-500 focus:outline-none focus:border-crimson-500 transition-all text-sm md:text-base font-mono-code">
+                <div class="absolute inset-y-0 right-2 flex items-center space-x-1">
+                    <button onclick="clearSearch()" class="px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition-colors">Clear</button>
+                    <button onclick="handleSearch()" class="px-4 py-2 rounded-xl bg-crimson-600 hover:bg-crimson-700 text-white text-xs font-semibold shadow-lg shadow-crimson-600/30 transition-all">Search</button>
+                </div>
+            </div>
+
+            <!-- Hubs Grid -->
+            <div id="hubsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+                <!-- Card 1 -->
+                <div class="hub-card glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group" data-category="framework" data-title="Ruby on Rails: Accelerate your agents with convention over configuration" data-tags="ruby rails agents convention configuration backend">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-red-950/80 border border-red-500/30 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-gem text-xl"></i>
+                            </div>
+                            <span class="text-xs font-mono-code px-2.5 py-1 rounded-full bg-red-950/50 text-red-400 border border-red-500/20">Framework</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base group-hover:text-crimson-400 transition-colors">Ruby on Rails</h4>
+                        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Accelerate your agents with convention over configuration. Build robust full-stack applications with lightning speed.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                        <span class="text-xs font-mono-code text-zinc-500">v7.2.1 • Active</span>
+                        <a href="https://rubyonrails.org" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-crimson-600 text-xs text-white transition-all flex items-center space-x-1.5">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="hub-card glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group" data-category="news" data-title="The Information" data-tags="the information news media journalism tech business">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-newspaper text-xl"></i>
+                            </div>
+                            <span class="text-xs font-mono-code px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700">Media</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base group-hover:text-crimson-400 transition-colors">The Information</h4>
+                        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Rigorous, in-depth journalism about the tech industry, Silicon Valley titans, and transformative enterprise movements.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                        <span class="text-xs font-mono-code text-zinc-500">Subscribers Only</span>
+                        <a href="https://www.theinformation.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-crimson-600 text-xs text-white transition-all flex items-center space-x-1.5">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="hub-card glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group" data-category="framework" data-title="The Best React-Based Framework | Gatsby" data-tags="gatsby react framework frontend static site graphQL">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-purple-950/80 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+                                <i class="fa-brands fa-react text-xl"></i>
+                            </div>
+                            <span class="text-xs font-mono-code px-2.5 py-1 rounded-full bg-purple-950/50 text-purple-300 border border-purple-500/20">Frontend</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base group-hover:text-crimson-400 transition-colors">Gatsby Framework</h4>
+                        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">The best React-based framework for building blazing-fast websites with powerful data layer capabilities.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                        <span class="text-xs font-mono-code text-zinc-500">React v18+</span>
+                        <a href="https://www.gatsbyjs.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-crimson-600 text-xs text-white transition-all flex items-center space-x-1.5">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="hub-card glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group" data-category="cms" data-title="Build your website on our free CMS tools | HubSpot" data-tags="hubspot cms free website tools inbound marketing CRM">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-orange-950/80 border border-orange-500/30 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-cube text-xl"></i>
+                            </div>
+                            <span class="text-xs font-mono-code px-2.5 py-1 rounded-full bg-orange-950/50 text-orange-400 border border-orange-500/20">CMS</span>
+                        </div>
+                        <h4 class="font-bold text-white text-base group-hover:text-crimson-400 transition-colors">HubSpot CMS Tools</h4>
+                        <p class="text-xs text-zinc-400 mt-2 leading-relaxed">Build your website on our free CMS tools. Seamlessly integrate CRM, marketing automation, and dynamic web content.</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                        <span class="text-xs font-mono-code text-zinc-500">Free Tier</span>
+                        <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-crimson-600 text-xs text-white transition-all flex items-center space-x-1.5">
+                            <span>Explore</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Showcase Highlights -->
+        <section id="showcase" class="space-y-8">
+            <div>
+                <span class="text-xs font-mono-code text-crimson-500 uppercase tracking-widest">Showcase Cards</span>
+                <h3 class="text-2xl font-bold text-white mt-1">Highlighted Animated Ticker Items</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-crimson-600/30 relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-crimson-600/10 rounded-full blur-2xl group-hover:bg-crimson-600/25 transition-all"></div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="px-3 py-1 rounded-md bg-crimson-600 text-white text-xs font-mono-code font-bold">01</span>
+                        <span class="text-xs text-zinc-400 font-mono-code">Ruby on Rails Engine</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2 group-hover:text-crimson-400 transition-colors">Ruby on Rails: Accelerate your agents with convention over configuration</h4>
+                    <p class="text-sm text-zinc-300 leading-relaxed">Empower autonomous agents and full-stack web applications by leveraging powerful scaffolding, Active Record ORM, and time-tested design conventions.</p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-zinc-700/60 relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-zinc-600/10 rounded-full blur-2xl group-hover:bg-zinc-600/25 transition-all"></div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="px-3 py-1 rounded-md bg-zinc-800 text-zinc-200 text-xs font-mono-code font-bold border border-zinc-600">02</span>
+                        <span class="text-xs text-zinc-400 font-mono-code">The Information Media</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2 group-hover:text-crimson-400 transition-colors">The Information</h4>
+                    <p class="text-sm text-zinc-300 leading-relaxed">Delivering uncompromised investigative reporting on the leadership, financial strategies, and technological shifts defining Silicon Valley.</p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-purple-600/30 relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/25 transition-all"></div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="px-3 py-1 rounded-md bg-purple-600 text-white text-xs font-mono-code font-bold">03</span>
+                        <span class="text-xs text-zinc-400 font-mono-code">Gatsby React Framework</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2 group-hover:text-crimson-400 transition-colors">The Best React-Based Framework | Gatsby</h4>
+                    <p class="text-sm text-zinc-300 leading-relaxed">Combine the flexibility of React with static site generation and GraphQL data sourcing to deliver top-tier performance.</p>
+                </div>
+
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-orange-600/30 relative overflow-hidden group">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-600/10 rounded-full blur-2xl group-hover:bg-orange-600/25 transition-all"></div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <span class="px-3 py-1 rounded-md bg-orange-600 text-white text-xs font-mono-code font-bold">04</span>
+                        <span class="text-xs text-zinc-400 font-mono-code">HubSpot CMS Suite</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-2 group-hover:text-crimson-400 transition-colors">Build your website on our free CMS tools | HubSpot</h4>
+                    <p class="text-sm text-zinc-300 leading-relaxed">Launch stunning, secure, and personalized web experiences backed by enterprise-grade CRM data and marketing analytics.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Git Bash Interactive Terminal -->
+        <section id="terminal" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-mono-code text-crimson-500 uppercase tracking-widest">Git Bash Simulation</span>
+                    <h3 class="text-2xl font-bold text-white mt-1">Self-Update & Daemon Console</h3>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden border border-crimson-600/30 shadow-2xl">
+                <div class="bg-obsidian-950 px-4 py-3 border-b border-zinc-800 flex items-center justify-between text-xs font-mono-code text-zinc-400">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-terminal text-crimson-500"></i>
+                        <span>gitbash@autosync-nexus: ~/workspace</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="clearTerminal()" class="hover:text-white transition-colors">Clear</button>
+                        <button onclick="runQuickCommand('git pull origin main')" class="text-crimson-400 hover:text-crimson-300 transition-colors">Quick Pull</button>
+                    </div>
+                </div>
+                
+                <div id="terminalOutput" class="p-6 font-mono-code text-xs sm:text-sm text-zinc-300 space-y-2 h-72 overflow-y-auto bg-obsidian-950/90">
+                    <div class="text-zinc-500">AutoSync Nexus Bash Environment v4.2.0 (x86_64-pc-msys)</div>
+                    <div class="text-zinc-500">Tip: Use Up/Down arrow keys to navigate command history. Type <span class="text-crimson-400">help</span> for commands.</div>
+                    <div class="text-emerald-400">$ git status</div>
+                    <div>On branch main. Modular file structure active (/css, /js).</div>
+                </div>
+
+                <div class="bg-obsidian-900 px-4 py-3 border-t border-zinc-800 flex items-center space-x-3">
+                    <span class="text-crimson-500 font-mono-code font-bold">$</span>
+                    <input type="text" id="terminalInput" onkeydown="handleTerminalKey(event)" placeholder="Type a command (update, status, search, help)..." class="w-full bg-transparent text-white font-mono-code text-xs sm:text-sm focus:outline-none placeholder-zinc-600">
+                    <button onclick="executeTerminalCommand()" class="px-4 py-2 rounded-lg bg-crimson-600 hover:bg-crimson-700 text-white text-xs font-mono-code font-semibold transition-all">Run</button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <button onclick="runQuickCommand('update')" class="px-4 py-2 rounded-xl bg-obsidian-800 hover:bg-crimson-950/60 border border-crimson-600/30 text-xs font-mono-code text-zinc-200 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-rotate text-crimson-500"></i>
+                    <span>./sync-update.sh</span>
+                </button>
+                <button onclick="runQuickCommand('status')" class="px-4 py-2 rounded-xl bg-obsidian-800 hover:bg-obsidian-950/60 border border-zinc-700 text-xs font-mono-code text-zinc-200 transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-server text-emerald-500"></i>
+                    <span>git status</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Support Section -->
+        <section class="glass-panel p-8 sm:p-12 rounded-3xl border border-crimson-600/30 text-center space-y-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-crimson-950/20 via-transparent to-crimson-950/20 pointer-events-none"></div>
+            <div class="max-w-2xl mx-auto space-y-3 relative z-10">
+                <span class="text-xs font-mono-code text-crimson-500 uppercase tracking-widest">Support Open Source</span>
+                <h3 class="text-2xl sm:text-3xl font-bold text-white">Fuel the Obsidian Crimson Development</h3>
+                <p class="text-sm text-zinc-300">If AutoSync Nexus has accelerated your workflow, consider supporting ongoing maintenance.</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-4 pt-4 relative z-10">
+                <button onclick="openDonationModal('Buy Me a Coffee')" class="px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-obsidian-950 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center space-x-2.5">
+                    <i class="fa-solid fa-mug-hot text-base"></i>
+                    <span>Buy Me a Coffee</span>
+                </button>
+                <button onclick="openDonationModal('PayPal')" class="px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-600/20 transition-all flex items-center space-x-2.5">
+                    <i class="fa-brands fa-paypal text-base"></i>
+                    <span>Donate with PayPal</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-zinc-800 mt-20 py-8 px-4 lg:px-8 text-xs text-zinc-400">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-crimson-600 flex items-center justify-center text-white">
+                    <i class="fa-solid fa-terminal text-sm"></i>
+                </div>
+                <div>
+                    <p class="text-white font-semibold">AutoSync Nexus • Obsidian Crimson Edition</p>
+                    <p class="font-mono-code text-[11px] text-zinc-500">Powered by GitBash & Modular Architecture</p>
+                </div>
+            </div>
+            <div class="text-zinc-500 font-mono-code">&copy; 2026 AutoSync Nexus. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Donation Modal -->
+    <div id="donationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-obsidian-950/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass-panel p-8 rounded-3xl max-w-md w-full mx-4 border border-crimson-600/40 relative shadow-2xl space-y-6">
+            <button onclick="closeDonationModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="text-center space-y-2">
+                <div id="modalIcon" class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 mx-auto flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </div>
+                <h3 id="modalTitle" class="text-xl font-bold text-white">Support via Buy Me a Coffee</h3>
+                <p id="modalDesc" class="text-xs text-zinc-300">Fuel our open-source search hubs and gitbash self-update daemons!</p>
+            </div>
+
+            <div class="space-y-3 font-mono-code">
+                <div class="flex justify-center space-x-2">
+                    <button onclick="setDonationAmount(5)" class="donation-amt px-4 py-2 rounded-xl bg-obsidian-800 border border-crimson-600 text-white text-xs hover:bg-crimson-600 transition-all">$5</button>
+                    <button onclick="setDonationAmount(15)" class="donation-amt px-4 py-2 rounded-xl bg-obsidian-800 border border-zinc-700 text-white text-xs hover:bg-crimson-600 transition-all">$15</button>
+                    <button onclick="setDonationAmount(50)" class="donation-amt px-4 py-2 rounded-xl bg-obsidian-800 border border-zinc-700 text-white text-xs hover:bg-crimson-600 transition-all">$50</button>
+                </div>
+                <input type="text" id="donorName" placeholder="Your Name or @handle (optional)" class="w-full px-4 py-3 rounded-xl bg-obsidian-900 border border-zinc-700 text-white text-xs focus:outline-none focus:border-crimson-500 placeholder-zinc-600">
+            </div>
+
+            <button onclick="submitDonation()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-crimson-600 to-red-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-crimson-600/30 hover:opacity-95 transition-opacity">
+                Complete Contribution
+            </button>
+        </div>
+    </div>
+
+    <!-- Modular Script -->
+    <script src="js/app.js"></script>
+</body>
+</html>

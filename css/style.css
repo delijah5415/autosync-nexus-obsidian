@@ -1,0 +1,39 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #09090b;
+    color: #f4f4f5;
+}
+.font-mono-code {
+    font-family: 'Fira Code', monospace;
+}
+.glass-panel {
+    background: rgba(18, 18, 23, 0.7);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+.glass-panel-hover:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 10px 40px -10px rgba(220, 38, 38, 0.25);
+}
+.crimson-glow {
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+}
+.crimson-shadow {
+    box-shadow: 0 0 25px rgba(220, 38, 38, 0.3);
+}
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #09090b;
+}
+::-webkit-scrollbar-thumb {
+    background: #272738;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #b91c1c;
+}
