@@ -272,3 +272,40 @@ document.addEventListener("DOMContentLoaded", renderCustomHubs);
 
 // Hook into executeTerminalCommand switch cases via patch info
 // (Commands available now: matrix, export, add-hub)
+
+// --- PHASE 3: CUSTOM HUB MODAL CONTROLLER ---
+
+function openHubModal() {
+    const modal = document.getElementById('hubModal');
+    if (modal) {
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+    }
+}
+
+function closeHubModal() {
+    const modal = document.getElementById('hubModal');
+    if (modal) {
+        modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+}
+
+function handleHubFormSubmit(event) {
+    event.preventDefault();
+    const title = document.getElementById('hubTitleInput').value.trim();
+    const category = document.getElementById('hubCategorySelect').value;
+    const url = document.getElementById('hubUrlInput').value.trim();
+    const desc = document.getElementById('hubDescInput').value.trim();
+
+    if (!title || !url) {
+        showToast("Validation Error", "Hub Title and Destination URL are required.");
+        return;
+    }
+
+    saveCustomHub(title, category, url, desc);
+    closeHubModal();
+    
+    // Reset form inputs
+    document.getElementById('hubTitleInput').value = '';
+    document.getElementById('hubUrlInput').value = '';
+    document.getElementById('hubDescInput').value = '';
+}
