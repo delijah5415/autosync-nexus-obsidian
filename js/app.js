@@ -99,6 +99,17 @@ function saveCustomHub(title, category, url, desc) {
 }
 
 function renderCustomHubs() {
+    if (!localStorage.getItem("nexusCustomHubs_initialized")) {
+        const defaultCuratedHubs = [
+            { title: "LangChain Agent Hub", category: "Framework", url: "https://www.langchain.com", desc: "Building context-aware reasoning applications and autonomous agent pipelines." },
+            { title: "Hugging Face ML Hub", category: "Framework", url: "https://huggingface.co", desc: "Central repository for open-source machine learning models and transformers." },
+            { title: "Supabase Backend Engine", category: "Framework", url: "https://supabase.com", desc: "Open-source PostgreSQL database, authentication, and real-time APIs." },
+            { title: "Hacker News Engineering", category: "News", url: "https://news.ycombinator.com", desc: "Community-driven tech discussions and engineering post-mortems." }
+        ];
+        localStorage.setItem("nexusCustomHubs", JSON.stringify(defaultCuratedHubs));
+        localStorage.setItem("nexusCustomHubs_initialized", "true");
+    }
+    const grid = document.getElementById("hubsGrid");
     const grid = document.getElementById('hubsGrid');
     if (!grid) return;
     let customHubs = JSON.parse(localStorage.getItem('nexusCustomHubs') || '[]');
