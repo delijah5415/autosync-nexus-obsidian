@@ -424,3 +424,45 @@ function importHubsFromJson(event) {
 
 // Terminal command bindings for export/import/ping
 // (Handled inside executeTerminalCommand switch cases)
+
+// --- PHASE 5: VIRAL GROWTH & URL SHAREABLE HUBS ---
+
+// 1. Generate and Copy Shareable URL containing local storage custom hubs
+function shareCustomHubsUrl() {
+    try {
+        const customHubs = localStorage.getItem('nexusCustomHubs') || '[]';
+        const encoded = btoa(encodeURIComponent(customHubs));
+        const shareUrl = `${window.location.origin}${window.location.pathname}?hubs=${encoded}`;
+        
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast("Shareable Link Copied!", "URL containing your custom hubs copied to clipboard.");
+            appendTerminalLine("share --generate-url", `Generated link: ${shareUrl}`);
+        });
+    } catch (err) {
+        showToast("Share Error", "Failed to encode custom hubs into URL.");
+    }
+}
+
+// 2. Auto-import hubs from URL query parameter on page load
+function checkUrlHubsImport() {
+    const params = new URLSearchParams(window.location.search);
+    const encodedHubs = params.get('hubs');
+    if (encodedHubs) {
+        try {
+            const decoded = decodeURIComponent(atob(encodedHubs));
+            const parsed = JSON.parse(decoded);
+            if (Array.isArray(parsed)) {
+                localStorage.setItem('nexusCustomHubs', JSON.stringify(parsed));
+                showToast("Imported via Link", `Successfully loaded ${parsed.length} custom hubs from shared URL!`);
+                appendTerminalLine("import --url-params", `Loaded ${parsed.length} hubs from shared query string.`);
+            }
+        } catch (err) {
+            console.warn("[AutoSync] Failed to parse shared hubs from URL.");
+        }
+    }
+}
+
+// Hook into DOM load
+document.addEventListener("DOMContentLoaded", () => {
+    checkUrlHubsImport();
+});
