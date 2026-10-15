@@ -1,10 +1,13 @@
-// Terminal Command History State
+// --- AUTO-SYNC NEXUS: MASTER CONTROLLER v4.2.5 ---
+
 let commandHistory = [];
 let historyIndex = -1;
+let matrixActive = false;
 
-// Toast Notification Helper
+// Toast Notification System
 function showToast(title, message) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     document.getElementById('toast-title').innerText = title;
     document.getElementById('toast-message').innerText = message;
     toast.classList.remove('translate-y-20', 'opacity-0');
@@ -16,24 +19,26 @@ function showToast(title, message) {
 // Self-Update Trigger
 function triggerSelfUpdate() {
     const icon = document.getElementById('update-icon');
-    icon.classList.add('animate-spin');
+    if (icon) icon.classList.add('animate-spin');
     showToast("GitBash Daemon", "Initiating self-update sequence from origin/main...");
     
     setTimeout(() => {
-        icon.classList.remove('animate-spin');
-        showToast("Update Successful", "AutoSync Nexus updated to v4.2.1. All nodes synchronized.");
+        if (icon) icon.classList.remove('animate-spin');
+        showToast("Update Successful", "AutoSync Nexus fully updated to v4.2.5. All nodes synced.");
         appendTerminalLine("$ git pull origin main", "Already up to date with origin/main.");
     }, 2500);
 }
 
-// Interactive Search Functionality
+// Omni-Search Engine
 function handleSearch() {
-    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const inputElement = document.getElementById('searchInput');
+    if (!inputElement) return;
+    const query = inputElement.value.toLowerCase().trim();
     const cards = document.querySelectorAll('.hub-card');
     
     cards.forEach(card => {
-        const title = card.getAttribute('data-title').toLowerCase();
-        const tags = card.getAttribute('data-tags').toLowerCase();
+        const title = (card.getAttribute('data-title') || '').toLowerCase();
+        const tags = (card.getAttribute('data-tags') || '').toLowerCase();
         if (title.includes(query) || tags.includes(query)) {
             card.style.display = 'flex';
         } else {
@@ -43,18 +48,21 @@ function handleSearch() {
 }
 
 function clearSearch() {
-    document.getElementById('searchInput').value = '';
+    const inputElement = document.getElementById('searchInput');
+    if (inputElement) inputElement.value = '';
     handleSearch();
 }
 
-// Category Filter
+// Category Filtering
 function filterHubs(category) {
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.remove('bg-crimson-600', 'text-white');
         btn.classList.add('bg-obsidian-800', 'text-zinc-300');
     });
-    event.target.classList.remove('bg-obsidian-800', 'text-zinc-300');
-    event.target.classList.add('bg-crimson-600', 'text-white');
+    if (event && event.target) {
+        event.target.classList.remove('bg-obsidian-800', 'text-zinc-300');
+        event.target.classList.add('bg-crimson-600', 'text-white');
+    }
 
     const cards = document.querySelectorAll('.hub-card');
     cards.forEach(card => {
@@ -66,151 +74,11 @@ function filterHubs(category) {
     });
 }
 
-// Git Bash Terminal Simulation with History
-function appendTerminalLine(cmd, output) {
-    const terminalOutput = document.getElementById('terminalOutput');
-    const cmdDiv = document.createElement('div');
-    cmdDiv.className = 'text-crimson-400 font-bold';
-    cmdDiv.innerText = `$ ${cmd}`;
-    terminalOutput.appendChild(cmdDiv);
-
-    if (output) {
-        const outDiv = document.createElement('div');
-        outDiv.className = 'text-zinc-300';
-        outDiv.innerText = output;
-        terminalOutput.appendChild(outDiv);
-    }
-    terminalOutput.scrollTop = terminalOutput.scrollHeight;
-}
-
-function executeTerminalCommand() {
-    const input = document.getElementById('terminalInput');
-    const cmd = input.value.trim();
-    if (!cmd) return;
-
-    // Push to history
-    commandHistory.push(cmd);
-    historyIndex = commandHistory.length;
-
-    input.value = '';
-    
-    if (cmd.toLowerCase() === 'clear') {
-        clearTerminal();
-        return;
-    }
-
-    let response = '';
-    switch(cmd.toLowerCase()) {
-        case 'update':
-            response = 'Fetching latest updates... [OK] Ruby on Rails, Gatsby, The Information & HubSpot synced.';
-            triggerSelfUpdate();
-            break;
-        case 'status':
-            response = 'On branch main. All telemetry nodes operational. Latency: 14ms.';
-            break;
-        case 'help':
-            response = 'Available commands: update, status, verify, search [query], clear, git pull';
-            break;
-        case 'verify':
-            response = 'Verification passed: All 4 featured showcase items and search hubs are fully indexed.';
-            break;
-        case 'git pull':
-            response = 'Already up to date. Working tree clean.';
-            break;
-        default:
-            if (cmd.startsWith('search ')) {
-                const term = cmd.replace('search ', '');
-                document.getElementById('searchInput').value = term;
-                handleSearch();
-                response = `Filtered search hubs for: "${term}"`;
-            } else {
-                response = `bash: command not found: ${cmd}. Type 'help' for available commands.`;
-            }
-    }
-
-    appendTerminalLine(cmd, response);
-}
-
-function handleTerminalKey(event) {
-    const input = document.getElementById('terminalInput');
-    if (event.key === 'Enter') {
-        executeTerminalCommand();
-    } else if (event.key === 'ArrowUp') {
-        if (commandHistory.length > 0 && historyIndex > 0) {
-            historyIndex--;
-            input.value = commandHistory[historyIndex];
-        }
-        event.preventDefault();
-    } else if (event.key === 'ArrowDown') {
-        if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
-            historyIndex++;
-            input.value = commandHistory[historyIndex];
-        } else {
-            historyIndex = commandHistory.length;
-            input.value = '';
-        }
-        event.preventDefault();
-    }
-}
-
-function runQuickCommand(cmd) {
-    document.getElementById('terminalInput').value = cmd;
-    executeTerminalCommand();
-}
-
-function clearTerminal() {
-    document.getElementById('terminalOutput').innerHTML = '<div class="text-zinc-500">Terminal cleared. Type help for options.</div>';
-}
-
-// Donation Modal Functions
-function openDonationModal(type) {
-    const modal = document.getElementById('donationModal');
-    const title = document.getElementById('modalTitle');
-    const desc = document.getElementById('modalDesc');
-    const icon = document.getElementById('modalIcon');
-
-    if (type === 'Buy Me a Coffee') {
-        title.innerText = 'Support via Buy Me a Coffee';
-        desc.innerText = 'Fuel our open-source search hubs and gitbash self-update daemons!';
-        icon.className = 'w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 mx-auto flex items-center justify-center text-2xl';
-        icon.innerHTML = '<i class="fa-solid fa-mug-hot"></i>';
-    } else {
-        title.innerText = 'Support via PayPal';
-        desc.innerText = 'Secure direct contribution to server costs and feature expansions.';
-        icon.className = 'w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-500/40 text-blue-400 mx-auto flex items-center justify-center text-2xl';
-        icon.innerHTML = '<i class="fa-brands fa-paypal"></i>';
-    }
-
-    modal.classList.remove('opacity-0', 'pointer-events-none');
-}
-
-function closeDonationModal() {
-    const modal = document.getElementById('donationModal');
-    modal.classList.add('opacity-0', 'pointer-events-none');
-}
-
-function setDonationAmount(amt) {
-    document.querySelectorAll('.donation-amt').forEach(btn => {
-        btn.classList.remove('border-crimson-600', 'bg-crimson-600', 'text-white');
-        btn.classList.add('border-zinc-700', 'bg-obsidian-800');
-    });
-    event.target.classList.remove('border-zinc-700', 'bg-obsidian-800');
-    event.target.classList.add('border-crimson-600', 'bg-crimson-600', 'text-white');
-    showToast("Amount Selected", `Selected $${amt} contribution tier.`);
-}
-
-function submitDonation() {
-    closeDonationModal();
-    showToast("Thank You!", "Your contribution support has been registered successfully.");
-}
-
-// --- PHASE 2: ADVANCED FEATURES ---
-
-// 1. Matrix Stream Mode Toggle
-let matrixActive = false;
+// Matrix Stream Mode Toggle
 function toggleMatrixMode() {
     matrixActive = !matrixActive;
     const terminal = document.getElementById('terminalOutput');
+    if (!terminal) return;
     if (matrixActive) {
         terminal.classList.add('bg-emerald-950/90', 'text-emerald-400');
         showToast("Matrix Mode", "Cyberpunk stream filter enabled.");
@@ -221,28 +89,28 @@ function toggleMatrixMode() {
     }
 }
 
-// 2. Custom Hub Storage & Creator
+// Custom Hub Local Storage Management
 function saveCustomHub(title, category, url, desc) {
     let customHubs = JSON.parse(localStorage.getItem('nexusCustomHubs') || '[]');
     customHubs.push({ title, category, url, desc });
     localStorage.setItem('nexusCustomHubs', JSON.stringify(customHubs));
     renderCustomHubs();
-    showToast("Hub Added", `Successfully registered "${title}" to local storage.`);
+    showToast("Hub Registered", `Successfully added "${title}" to your local index.`);
 }
 
 function renderCustomHubs() {
     const grid = document.getElementById('hubsGrid');
+    if (!grid) return;
     let customHubs = JSON.parse(localStorage.getItem('nexusCustomHubs') || '[]');
     
-    // Remove old custom rendered elements if any
     document.querySelectorAll('.custom-dynamic-hub').forEach(el => el.remove());
 
     customHubs.forEach(hub => {
         const card = document.createElement('div');
         card.className = 'hub-card custom-dynamic-hub glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group';
-        card.setAttribute('data-category', hub.category.toLowerCase());
-        card.setAttribute('data-title', hub.title.toLowerCase());
-        card.setAttribute('data-tags', hub.desc.toLowerCase());
+        card.setAttribute('data-category', (hub.category || 'custom').toLowerCase());
+        card.setAttribute('data-title', (hub.title || '').toLowerCase());
+        card.setAttribute('data-tags', (hub.desc || '').toLowerCase());
 
         card.innerHTML = `
             <div>
@@ -267,26 +135,15 @@ function renderCustomHubs() {
     });
 }
 
-// Run render on load
-document.addEventListener("DOMContentLoaded", renderCustomHubs);
-
-// Hook into executeTerminalCommand switch cases via patch info
-// (Commands available now: matrix, export, add-hub)
-
-// --- PHASE 3: CUSTOM HUB MODAL CONTROLLER ---
-
+// Modal Form Controllers
 function openHubModal() {
     const modal = document.getElementById('hubModal');
-    if (modal) {
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-    }
+    if (modal) modal.classList.remove('opacity-0', 'pointer-events-none');
 }
 
 function closeHubModal() {
     const modal = document.getElementById('hubModal');
-    if (modal) {
-        modal.classList.add('opacity-0', 'pointer-events-none');
-    }
+    if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
 }
 
 function handleHubFormSubmit(event) {
@@ -304,8 +161,163 @@ function handleHubFormSubmit(event) {
     saveCustomHub(title, category, url, desc);
     closeHubModal();
     
-    // Reset form inputs
     document.getElementById('hubTitleInput').value = '';
     document.getElementById('hubUrlInput').value = '';
     document.getElementById('hubDescInput').value = '';
 }
+
+// Git Bash Terminal Simulation with History & Commands
+function appendTerminalLine(cmd, output) {
+    const terminalOutput = document.getElementById('terminalOutput');
+    if (!terminalOutput) return;
+    const cmdDiv = document.createElement('div');
+    cmdDiv.className = 'text-crimson-400 font-bold';
+    cmdDiv.innerText = `$ ${cmd}`;
+    terminalOutput.appendChild(cmdDiv);
+
+    if (output) {
+        const outDiv = document.createElement('div');
+        outDiv.className = 'text-zinc-300';
+        outDiv.innerText = output;
+        terminalOutput.appendChild(outDiv);
+    }
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+}
+
+function executeTerminalCommand() {
+    const input = document.getElementById('terminalInput');
+    if (!input) return;
+    const cmd = input.value.trim();
+    if (!cmd) return;
+
+    commandHistory.push(cmd);
+    historyIndex = commandHistory.length;
+    input.value = '';
+    
+    if (cmd.toLowerCase() === 'clear') {
+        clearTerminal();
+        return;
+    }
+
+    let response = '';
+    switch(cmd.toLowerCase()) {
+        case 'update':
+            response = 'Fetching latest updates... [OK] Ruby on Rails, Gatsby, HubSpot & Custom Hubs synced.';
+            triggerSelfUpdate();
+            break;
+        case 'status':
+            response = 'On branch main. All telemetry nodes operational. Latency: 14ms. LocalStorage active.';
+            break;
+        case 'matrix':
+            toggleMatrixMode();
+            response = 'Matrix stream toggled.';
+            break;
+        case 'add-hub':
+            openHubModal();
+            response = 'Opening custom hub registration modal form...';
+            break;
+        case 'help':
+            response = 'Available commands: update, status, matrix, add-hub, verify, search [query], clear, git pull';
+            break;
+        case 'verify':
+            response = 'Verification passed: All modules, local storage persistence, and modals are fully operational.';
+            break;
+        case 'git pull':
+            response = 'Already up to date. Working tree clean.';
+            break;
+        default:
+            if (cmd.startsWith('search ')) {
+                const term = cmd.replace('search ', '');
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) searchInput.value = term;
+                handleSearch();
+                response = `Filtered search hubs for: "${term}"`;
+            } else {
+                response = `bash: command not found: ${cmd}. Type 'help' for available commands.`;
+            }
+    }
+
+    appendTerminalLine(cmd, response);
+}
+
+function handleTerminalKey(event) {
+    const input = document.getElementById('terminalInput');
+    if (!input) return;
+    if (event.key === 'Enter') {
+        executeTerminalCommand();
+    } else if (event.key === 'ArrowUp') {
+        if (commandHistory.length > 0 && historyIndex > 0) {
+            historyIndex--;
+            input.value = commandHistory[historyIndex];
+        }
+        event.preventDefault();
+    } else if (event.key === 'ArrowDown') {
+        if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            input.value = commandHistory[historyIndex];
+        } else {
+            historyIndex = commandHistory.length;
+            input.value = '';
+        }
+        event.preventDefault();
+    }
+}
+
+function runQuickCommand(cmd) {
+    const input = document.getElementById('terminalInput');
+    if (input) input.value = cmd;
+    executeTerminalCommand();
+}
+
+function clearTerminal() {
+    const output = document.getElementById('terminalOutput');
+    if (output) output.innerHTML = '<div class="text-zinc-500">Terminal cleared. Type help for options.</div>';
+}
+
+// Donation Modal Controllers
+function openDonationModal(type) {
+    const modal = document.getElementById('donationModal');
+    const title = document.getElementById('modalTitle');
+    const desc = document.getElementById('modalDesc');
+    const icon = document.getElementById('modalIcon');
+    if (!modal) return;
+
+    if (type === 'Buy Me a Coffee') {
+        title.innerText = 'Support via Buy Me a Coffee';
+        desc.innerText = 'Fuel our open-source search hubs and gitbash self-update daemons!';
+        icon.className = 'w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 mx-auto flex items-center justify-center text-2xl';
+        icon.innerHTML = '<i class="fa-solid fa-mug-hot"></i>';
+    } else {
+        title.innerText = 'Support via PayPal';
+        desc.innerText = 'Secure direct contribution to server costs and feature expansions.';
+        icon.className = 'w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-500/40 text-blue-400 mx-auto flex items-center justify-center text-2xl';
+        icon.innerHTML = '<i class="fa-brands fa-paypal"></i>';
+    }
+
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+}
+
+function closeDonationModal() {
+    const modal = document.getElementById('donationModal');
+    if (modal) modal.classList.add('opacity-0', 'pointer-events-none');
+}
+
+function setDonationAmount(amt) {
+    document.querySelectorAll('.donation-amt').forEach(btn => {
+        btn.classList.remove('border-crimson-600', 'bg-crimson-600', 'text-white');
+        btn.classList.add('border-zinc-700', 'bg-obsidian-800');
+    });
+    if (event && event.target) {
+        event.target.classList.remove('border-zinc-700', 'bg-obsidian-800');
+        event.target.classList.add('border-crimson-600', 'bg-crimson-600', 'text-white');
+    }
+    showToast("Amount Selected", `Selected $${amt} contribution tier.`);
+}
+
+function submitDonation() {
+    closeDonationModal();
+    showToast("Thank You!", "Your contribution support has been registered successfully.");
+}
+
+// Initialize custom hubs on DOM load
+document.addEventListener("DOMContentLoaded", renderCustomHubs);
