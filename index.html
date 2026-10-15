@@ -484,3 +484,18 @@
         </form>
     </div>
 </div>
+
+<!-- DONATION MODAL -->
+<div id="donationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden transition-all duration-300">
+    <div class="bg-obsidian-900 border border-crimson-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5 text-center">
+        <div id="modalIcon" class="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 mx-auto flex items-center justify-center text-2xl">
+            <i class="fa-solid fa-heart"></i>
+        </div>
+        <h3 id="modalTitle" class="text-xl font-bold text-white">Support AutoSync Nexus</h3>
+        <p id="modalDesc" class="text-xs text-zinc-400">Choose your preferred option to contribute.</p>
+        <div class="flex space-x-3 pt-2">
+            <button onclick="closeDonationModal()" class="flex-1 py-2.5 rounded-xl border border-zinc-700 text-zinc-300 font-mono-code text-xs hover:bg-zinc-800 transition-all">Cancel</button>
+            <button onclick="submitDonation()" class="flex-1 py-2.5 rounded-xl bg-crimson-600 hover:bg-crimson-700 text-white font-mono-code font-semibold text-xs shadow-lg shadow-crimson-600/30 transition-all">Proceed</button>
+        </div>
+    </div>
+</div>
