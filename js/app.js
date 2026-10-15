@@ -508,3 +508,42 @@ function submitDonation() {
         window.open("https://www.paypal.me/delijah5415", "_blank", "noopener,noreferrer");
     }
 }
+
+// --- PAYMENT & DONATION HANDLERS ---
+let currentDonationProvider = "Buy Me a Coffee";
+
+function openDonationModal(provider) {
+    currentDonationProvider = provider;
+    const modal = document.getElementById("donationModal");
+    const title = document.getElementById("modalTitle");
+    const desc = document.getElementById("modalDesc");
+
+    if (title) title.innerText = provider === "Buy Me a Coffee" ? "Support via Buy Me a Coffee" : "Support via PayPal";
+    if (desc) desc.innerText = provider === "Buy Me a Coffee" 
+        ? "Redirecting to Buy Me a Coffee to support AutoSync Nexus!" 
+        : "Redirecting securely to PayPal.me to support infrastructure costs.";
+
+    if (modal) {
+        modal.classList.remove("hidden", "opacity-0", "pointer-events-none");
+    }
+}
+
+function closeDonationModal() {
+    const modal = document.getElementById("donationModal");
+    if (modal) {
+        modal.classList.add("hidden", "opacity-0", "pointer-events-none");
+    }
+}
+
+function submitDonation() {
+    closeDonationModal();
+    if (typeof showToast === 'function') {
+        showToast("Redirecting...", "Opening checkout window in a new tab.");
+    }
+    
+    if (currentDonationProvider === "Buy Me a Coffee") {
+        window.open("https://www.buymeacoffee.com/delijah5415", "_blank", "noopener,noreferrer");
+    } else {
+        window.open("https://www.paypal.me/delijah5415", "_blank", "noopener,noreferrer");
+    }
+}
