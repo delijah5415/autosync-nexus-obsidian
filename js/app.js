@@ -466,3 +466,45 @@ function checkUrlHubsImport() {
 document.addEventListener("DOMContentLoaded", () => {
     checkUrlHubsImport();
 });
+
+// --- LIVE BUY ME A COFFEE & PAYPAL INTEGRATION ---
+let activeDonationType = "Buy Me a Coffee";
+
+function openDonationModal(type) {
+    activeDonationType = type;
+    const modal = document.getElementById("donationModal");
+    const title = document.getElementById("modalTitle");
+    const desc = document.getElementById("modalDesc");
+    const icon = document.getElementById("modalIcon");
+    if (!modal) return;
+
+    if (type === "Buy Me a Coffee") {
+        if (title) title.innerText = "Support via Buy Me a Coffee";
+        if (desc) desc.innerText = "Redirecting securely to fuel our open-source search hubs and gitbash daemons!";
+        if (icon) {
+            icon.className = "w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 mx-auto flex items-center justify-center text-2xl";
+            icon.innerHTML = '<i class="fa-solid fa-mug-hot"></i>';
+        }
+    } else {
+        if (title) title.innerText = "Support via PayPal";
+        if (desc) desc.innerText = "Redirecting securely to PayPal to support server infrastructure.";
+        if (icon) {
+            icon.className = "w-16 h-16 rounded-2xl bg-blue-500/20 border border-blue-500/40 text-blue-400 mx-auto flex items-center justify-center text-2xl";
+            icon.innerHTML = '<i class="fa-brands fa-paypal"></i>';
+        }
+    }
+
+    modal.classList.remove("opacity-0", "pointer-events-none");
+}
+
+function submitDonation() {
+    closeDonationModal();
+    showToast("Redirecting...", "Opening live checkout in a new tab.");
+    
+    // Replace 'delijah5415' with your actual BuyMeACoffee or PayPal handle if different
+    if (activeDonationType === "Buy Me a Coffee") {
+        window.open("https://www.buymeacoffee.com/delijah5415", "_blank", "noopener,noreferrer");
+    } else {
+        window.open("https://www.paypal.me/delijah5415", "_blank", "noopener,noreferrer");
+    }
+}
