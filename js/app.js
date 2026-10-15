@@ -203,3 +203,72 @@ function submitDonation() {
     closeDonationModal();
     showToast("Thank You!", "Your contribution support has been registered successfully.");
 }
+
+// --- PHASE 2: ADVANCED FEATURES ---
+
+// 1. Matrix Stream Mode Toggle
+let matrixActive = false;
+function toggleMatrixMode() {
+    matrixActive = !matrixActive;
+    const terminal = document.getElementById('terminalOutput');
+    if (matrixActive) {
+        terminal.classList.add('bg-emerald-950/90', 'text-emerald-400');
+        showToast("Matrix Mode", "Cyberpunk stream filter enabled.");
+        appendTerminalLine("matrix --mode stream", "Matrix rain stream initialized successfully.");
+    } else {
+        terminal.classList.remove('bg-emerald-950/90', 'text-emerald-400');
+        showToast("Matrix Mode", "Standard Obsidian Crimson view restored.");
+    }
+}
+
+// 2. Custom Hub Storage & Creator
+function saveCustomHub(title, category, url, desc) {
+    let customHubs = JSON.parse(localStorage.getItem('nexusCustomHubs') || '[]');
+    customHubs.push({ title, category, url, desc });
+    localStorage.setItem('nexusCustomHubs', JSON.stringify(customHubs));
+    renderCustomHubs();
+    showToast("Hub Added", `Successfully registered "${title}" to local storage.`);
+}
+
+function renderCustomHubs() {
+    const grid = document.getElementById('hubsGrid');
+    let customHubs = JSON.parse(localStorage.getItem('nexusCustomHubs') || '[]');
+    
+    // Remove old custom rendered elements if any
+    document.querySelectorAll('.custom-dynamic-hub').forEach(el => el.remove());
+
+    customHubs.forEach(hub => {
+        const card = document.createElement('div');
+        card.className = 'hub-card custom-dynamic-hub glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 group';
+        card.setAttribute('data-category', hub.category.toLowerCase());
+        card.setAttribute('data-title', hub.title.toLowerCase());
+        card.setAttribute('data-tags', hub.desc.toLowerCase());
+
+        card.innerHTML = `
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-crimson-950/80 border border-crimson-500/30 flex items-center justify-center text-crimson-500 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bookmark text-xl"></i>
+                    </div>
+                    <span class="text-xs font-mono-code px-2.5 py-1 rounded-full bg-crimson-950/50 text-crimson-400 border border-crimson-500/20">${hub.category}</span>
+                </div>
+                <h4 class="font-bold text-white text-base group-hover:text-crimson-400 transition-colors">${hub.title}</h4>
+                <p class="text-xs text-zinc-400 mt-2 leading-relaxed">${hub.desc}</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between">
+                <span class="text-xs font-mono-code text-zinc-500">Custom • Local</span>
+                <a href="${hub.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-obsidian-800 hover:bg-crimson-600 text-xs text-white transition-all flex items-center space-x-1.5">
+                    <span>Explore</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                </a>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// Run render on load
+document.addEventListener("DOMContentLoaded", renderCustomHubs);
+
+// Hook into executeTerminalCommand switch cases via patch info
+// (Commands available now: matrix, export, add-hub)
